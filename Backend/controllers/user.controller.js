@@ -1,24 +1,25 @@
-const userModel = require('../models/user.model');
+const userModel =require('../models/user.model');
 const userService = require('../services/user.service');
-const { validationResult } = require('express-validator'); // ✅ Import correctly
+const { validationResult } = require('express-validator'); 
 
  module.exports.registerUser = async (req, res, next) => {
-    // ✅ Fix: Define `errors` correctly
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() }); // ✅ Use `errors`, not `error`
+        return res.status(400).json({ errors: errors.array() }); 
     }
 
     try {
         const { fullname, email, password } = req.body;
 
-        // ✅ Fix: Check if fullname is an object and contains firstname/lastname
-        if (!fullname || typeof fullname !== 'object' || !fullname.firstname || !fullname.lastname) {
+           if (!fullname || typeof fullname !== 'object' || !fullname.firstname || !fullname.lastname) {
             return res.status(400).json({ error: "Fullname must contain firstname and lastname" });
         }
 
         // Hash password
-        const hashedPassword = await userModel.hashedPassword(password);
+      const hashedPassword = await userModel.hashPassword(password);
+ 
+
 
         // Create user
         const user = await userService.createUser({
@@ -32,7 +33,36 @@ const { validationResult } = require('express-validator'); // ✅ Import correct
         const token = user.generateAuthToken();
         res.status(201).json({ token, user });
     } catch (error) {
-        next(error); // ✅ Pass error to error-handling middleware
+        next(error);
     }
 };
 
+module.exports.loginUser = async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email, password } = req.body;
+
+    try {
+        // ✅ Ensure password is included in query
+        const user = await userModel.findOne({ email }).select('+password');
+
+        if (!user) {
+            return res.status(400).json({ error: 'Invalid Email or Password' });
+        }
+
+        // ✅ Correct method call (ensure it's an instance method)
+        const isMatch = await user.comparePassword(password);
+
+        if (!isMatch) {
+            return res.status(400).json({ error: 'Invalid Email or Password' });
+        }
+
+        const token = user.generateAuthToken();
+        res.status(200).json({ token, user });
+    } catch (error) {
+        next(error);
+    }
+};
