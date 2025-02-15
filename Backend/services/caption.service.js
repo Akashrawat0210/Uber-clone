@@ -10,23 +10,12 @@ module.exports.createCaption = async ({
   capacity,
   vehicleType,
 }) => {
-  if (
-    !firstname ||
-    !email ||
-    !password ||
-    !color ||
-    !plate ||
-    !capacity ||
-    !vehicleType
-  ) {
+  if (!firstname || !email || !password || !color || !plate || !capacity || !vehicleType) {
     throw new Error("All fields are required");
   }
 
-  const caption = captionModel({
-    fullname: {
-      firstname,
-      lastname,
-    },
+  const caption = new captionModel({ 
+    fullname: { firstname, lastname },
     email,
     password,
     vehicle: {
@@ -37,5 +26,5 @@ module.exports.createCaption = async ({
     },
   });
 
-  return caption;
+  return await caption.save(); 
 };

@@ -2,9 +2,8 @@ const express = require('express');
 const router = express.Router();
 const {body } = require('express-validator');
 const captionController = require('../controllers/caption.controller');
+const authMiddleware = require('../middlewares/auth.middleware');
 
-console.log("Caption Controller: ", captionController);
-console.log("registerCaption Function: ", captionController.registerCaption);
 
 router.post('/register',[
     body('email').isEmail().withMessage('Invalid email '),
@@ -17,6 +16,17 @@ router.post('/register',[
 ],
 captionController.registerCaption
 );
+
+
+router.post('/login',[
+    body('email').isEmail().withMessage('Invalid email '),
+    body('password').isLength({min: 5}).withMessage('Password must be at least 5 characters long')
+], captionController.loginCaption
+);
+
+router.get('/profile', authMiddleware.authCaption , captionController.getCaptionProfile);
+
+router.get('/logout', authMiddleware.authCaption , captionController.logoutCaption);
 
 
 
