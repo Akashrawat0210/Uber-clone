@@ -50,15 +50,20 @@ module.exports.loginUser = async (req, res, next) => {
 
   const { email, password } = req.body;
 
+  const userAlreadyExists = await userModel.findOne({ email });
+  if (!userAlreadyExists) {
+    return res.status(400).json({ error: "User already exixt" });
+  }
+
   try {
-    // ✅ Ensure password is included in query
+  
     const user = await userModel.findOne({ email }).select("+password");
 
     if (!user) {
       return res.status(400).json({ error: "Invalid Email or Password" });
     }
 
-    // ✅ Correct method call (ensure it's an instance method)
+   
     const isMatch = await user.comparePassword(password);
 
     if (!isMatch) {
