@@ -1,25 +1,42 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { UserDataContext } from "../context/UserContext"; // Ensure correct path
 import "./styles/UserSignup.css";
 
 const UserSignup = () => {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [firstname, setFirstname] = useState("");
+  const [lastname, setLastname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [userData, setUserData] = useState({});
 
-  const submitHandler = (e) => {
-    e.preventDefault();
-    setUserData({
-      firstName: firstName,
-      lastName: lastName,
-      email: email,
-      password: password,
-    });
+  const navigate = useNavigate();
+  const { user, setUser } = useContext(UserDataContext); // useContext now works
 
-    setFirstName("");
-    setLastName("");
+  const submitHandler = async (e) => {
+    e.preventDefault();
+    const newUser = {
+      firstname,
+      lastname,
+      email,
+      password,
+    };
+
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser);
+      if (response.status === 201) {
+        const data = response.data;
+        setUser(data.user);
+        localStorage.setItem("token", data.token);
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("Signup Error:", error);
+    }
+
+    setFirstname("");
+    setLastname("");
     setEmail("");
     setPassword("");
   };
@@ -37,16 +54,16 @@ const UserSignup = () => {
           <div className="input-group">
             <input
               className="input-field"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              value={firstname}
+              onChange={(e) => setFirstname(e.target.value)}
               required
               type="text"
               placeholder="First-name"
             />
             <input
               className="input-field"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
+              value={lastname}
+              onChange={(e) => setLastname(e.target.value)}
               required
               type="text"
               placeholder="Last-name"

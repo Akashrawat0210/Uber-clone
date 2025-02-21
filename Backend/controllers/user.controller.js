@@ -3,6 +3,45 @@ const userService = require("../services/user.service");
 const { validationResult } = require("express-validator");
 const blackListTokenModel = require("../models/blacklistToken.model");
 
+// module.exports.registerUser = async (req, res, next) => {
+//   const errors = validationResult(req);
+//   if (!errors.isEmpty()) {
+//     return res.status(400).json({ errors: errors.array() });
+//   }
+
+//   try {
+//     const { fullname, email, password } = req.body;
+
+//     if (
+//       !fullname ||
+//       typeof fullname !== "object" ||
+//       !fullname.firstname ||
+//       !fullname.lastname
+//     ) {
+//       return res
+//         .status(400)
+//         .json({ error: "Fullname must contain firstname and lastname" });
+//     }
+
+//     // Hash password
+//     const hashedPassword = await userModel.hashPassword(password);
+
+//     // Create user
+//     const user = await userService.createUser({
+//       firstname: fullname.firstname,
+//       lastname: fullname.lastname,
+//       email,
+//       password: hashedPassword,
+//     });
+
+//     // Generate auth token
+//     const token = user.generateAuthToken();
+//     res.status(201).json({ token, user });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
 module.exports.registerUser = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -10,17 +49,25 @@ module.exports.registerUser = async (req, res, next) => {
   }
 
   try {
-    const { fullname, email, password } = req.body;
+    const { firstname, lastname, email, password } = req.body;
 
-    if (
-      !fullname ||
-      typeof fullname !== "object" ||
-      !fullname.firstname ||
-      !fullname.lastname
-    ) {
+    // Validate firstname and lastname
+    if (!firstname || !lastname) {
       return res
         .status(400)
-        .json({ error: "Fullname must contain firstname and lastname" });
+        .json({ error: "First name and last name are required." });
+    }
+
+    if (firstname.length < 3) {
+      return res
+        .status(400)
+        .json({ error: "First name must be at least 3 characters long." });
+    }
+
+    if (lastname.length < 3) {
+      return res
+        .status(400)
+        .json({ error: "Last name must be at least 3 characters long." });
     }
 
     // Hash password
@@ -28,8 +75,8 @@ module.exports.registerUser = async (req, res, next) => {
 
     // Create user
     const user = await userService.createUser({
-      firstname: fullname.firstname,
-      lastname: fullname.lastname,
+      firstname,
+      lastname,
       email,
       password: hashedPassword,
     });
@@ -41,6 +88,7 @@ module.exports.registerUser = async (req, res, next) => {
     next(error);
   }
 };
+
 
 module.exports.loginUser = async (req, res, next) => {
   const errors = validationResult(req);
