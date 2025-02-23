@@ -37,25 +37,26 @@ const captionSchema = new mongoose.Schema({
   },
 
   // details of the vehicle
-  vehicle: {
-    color: {
-      type: String,
-      required: true,
-    },
-    plate: {
-      type: String,
-      required: true,
-    },
-    capacity: {
-      type: Number,
-      required: true,
-    },
-    vehicleType: {
-      type: String,
-      required: true,
-      enum: ["car", "bike", "auto"],
-    },
+ vehicleColor: {
+   type: String,
+   required: true,
+    minlength: 3 
   },
+   vehiclePlate: {
+     type: String,
+      required: true,
+       minlength: 3 
+      },
+     vehicleCapacity: 
+     { type: Number,
+       required: true
+       },
+    vehicleType: { 
+      type: String,
+       required: true, 
+       enum: ["car", "bike", "auto"],
+       lowercase: true 
+},
 
   // location of the user
   location: {

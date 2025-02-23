@@ -1,20 +1,36 @@
 import React from 'react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
+import { CaptionDataContext } from '../context/CaptionContext'
 import './styles/CaptionLogin.css'
 
 const CaptionLogin = () => {
 
   const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [captionData, setCaptionData] = useState({});
+
+    const {caption, setCaption} = React.useContext(CaptionDataContext);
+    const navigate = useNavigate(); 
+   
   
-    const submitHandler = (e) => {
-      e.preventDefault(); // Fixed typo
-      setCaptionData({
+    const submitHandler = async (e) => {
+      e.preventDefault(); 
+      const caption={
         email: email,
         password: password,
-      });
+      }
+const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captions/login`, caption);
+
+if(response.status === 200){
+  const data = response.data;
+  setCaption(data.caption);
+
+  localStorage.setItem('token',data.token);
+  navigate('/caption-home')
+}
+
       setEmail(""); // Clear input
       setPassword(""); // Clear input
     };

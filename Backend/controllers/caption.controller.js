@@ -5,15 +5,27 @@ const BlacklistToken = require("../models/blacklistToken.model");
 
 
 module.exports.registerCaption = async (req, res, next) => {
-  // Validate request body
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ error: errors.array() });
-  }
-
-  const { firstname, lastname, email, password, vehicle } = req.body;
-
   try {
+    console.log("Received vehicleType:", req.body.vehicleType);
+    // Convert vehicleType to lowercase before validation
+    if (req.body.vehicleType) {
+      req.body.vehicleType = req.body.vehicleType.toLowerCase();
+    }
+
+    // Validate request body
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: errors.array() });
+    }
+
+    const { firstname, lastname, email, password, vehicleColor, vehiclePlate, vehicleCapacity, vehicleType } = req.body;
+
+    // Check if vehicleType is valid manually
+    const allowedVehicleTypes = ["car", "bike", "auto"];
+    if (!allowedVehicleTypes.includes(vehicleType)) {
+      return res.status(400).json({ error: `Invalid vehicle type: ${vehicleType}. Allowed values are ${allowedVehicleTypes.join(", ")}` });
+    }
+
     // Check if the caption (driver) already exists
     const captionAlreadyExists = await captionModel.findOne({ email });
     if (captionAlreadyExists) {
@@ -28,10 +40,10 @@ module.exports.registerCaption = async (req, res, next) => {
       lastname,
       email,
       password: hashedPassword,
-      color: vehicle.color,
-      plate: vehicle.plate,
-      capacity: vehicle.capacity,
-      vehicleType: vehicle.vehicleType,
+      vehicleColor,
+      vehiclePlate,
+      vehicleCapacity,
+       vehicleType, // Now it's correctly formatted
     });
 
     // Generate authentication token
@@ -43,6 +55,7 @@ module.exports.registerCaption = async (req, res, next) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 
 module.exports.loginCaption = async (req, res, next) => {
   const error = validationResult(req);
